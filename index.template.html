@@ -1,0 +1,60 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hospital Distance</title>
+<style>
+  body { font: 18px/1.4 -apple-system, system-ui, sans-serif; margin: 0; background: #f5f6f8; color: #1c1f23; }
+  main { max-width: 480px; margin: 0 auto; padding: 24px 20px; }
+  h1 { font-size: 22px; margin: 0 0 24px; }
+  label { display: block; font-size: 14px; color: #5b6470; margin: 0 0 6px; }
+  select { width: 100%; font-size: 18px; padding: 14px 12px; margin-bottom: 20px; border: 1px solid #c9ced6; border-radius: 10px; background: #fff; }
+  #result { background: #fff; border: 1px solid #c9ced6; border-radius: 10px; padding: 20px; text-align: center; }
+  #miles { font-size: 48px; font-weight: 600; }
+  #note, #up { font-size: 14px; color: #5b6470; }
+  #up { margin-top: 28px; }
+</style>
+<main>
+  <h1>Hospital Distance</h1>
+  <label for="from">From</label>
+  <select id="from"></select>
+  <label for="to">To</label>
+  <select id="to"></select>
+  <div id="result"><div id="miles">--</div><div id="note"></div></div>
+  <div id="up"><label for="file">Replace distance table (CSV)</label><input id="file" type="file" accept=".csv,text/csv"></div>
+</main>
+<script>
+  const DEFAULT_CSV = `__CSV__`;
+  const f = document.getElementById("from"), t = document.getElementById("to");
+  let names = [], D = {};
+
+  function load(csv) {
+    const rows = csv.trim().split(/\r?\n/).map(r => r.split(","));
+    const cols = rows[0].slice(1);
+    D = {};
+    names = rows.slice(1).map(r => r[0]);
+    rows.slice(1).forEach(r => { D[r[0]] = {}; cols.forEach((c, i) => { D[r[0]][c] = parseFloat(r[i + 1]); }); });
+    [f, t].forEach(s => { s.length = 0; s.add(new Option("Select hospital", "")); names.forEach(n => s.add(new Option(n, n))); });
+    show();
+  }
+
+  function show() {
+    const a = f.value, b = t.value, m = document.getElementById("miles"), n = document.getElementById("note");
+    m.textContent = "--";
+    if (!a || !b) { n.textContent = "Pick two hospitals"; return; }
+    if (a === b) { n.textContent = "Pick two different hospitals"; return; }
+    // row first, then the reverse cell (Methodist rows have no columns)
+    const d = D[a]?.[b] ?? D[b]?.[a];
+    if (d === undefined || isNaN(d)) { n.textContent = "No route on the sheet"; return; }
+    m.textContent = d.toFixed(1) + " mi";
+    n.textContent = "";
+  }
+
+  f.onchange = t.onchange = show;
+  document.getElementById("file").onchange = async e => {
+    const csv = await e.target.files[0].text();
+    try { load(csv); localStorage.setItem("csv", csv); } catch { load(DEFAULT_CSV); }
+  };
+  let saved = null;
+  try { saved = localStorage.getItem("csv"); } catch {}
+  try { load(saved || DEFAULT_CSV); } catch { load(DEFAULT_CSV); }
+</script>
