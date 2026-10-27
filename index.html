@@ -2,6 +2,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hospital Distance</title>
+<meta name="theme-color" content="#1f6feb">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>
   body { font: 18px/1.4 -apple-system, system-ui, sans-serif; margin: 0; background: #f5f6f8; color: #1c1f23; }
   main { max-width: 480px; margin: 0 auto; padding: 24px 20px; }
@@ -81,4 +84,5 @@ Methodist Womens,102.6,126.2,139.1,176.5,176.1,118.7,124.6,93.6,74.3,115.8,98.5,
   let saved = null;
   try { saved = localStorage.getItem("csv"); } catch {}
   try { load(saved || DEFAULT_CSV); } catch { load(DEFAULT_CSV); }
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 </script>
